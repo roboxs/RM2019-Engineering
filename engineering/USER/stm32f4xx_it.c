@@ -333,14 +333,26 @@ void CAN1_RX0_IRQHandler(void)
 		case 0x207:
 		{
 			encoder_data_handler(&moto_claw_left,&g_can1_receive_str);
-			g_move_claw_left_pid.measure = moto_claw_left.speed_rpm;
+			//速度更新
+			g_get_bullet.claw_moto_left.moto_speed_pid.measure = moto_claw_left.speed_rpm;
+			//2006电机圈数,最多36圈
+			if(moto_claw_left.round_cnt == 36) moto_claw_left.round_cnt =0;
+			g_get_bullet.claw_moto_left.current_round = moto_claw_left.round_cnt;
+			g_get_bullet.claw_moto_left.cuttent_ecd = moto_claw_left.ecd;
+			g_get_bullet.claw_moto_left.moto_angle_pid.measure = (g_get_bullet.claw_moto_left.current_round * 8191 + g_get_bullet.claw_moto_left.cuttent_ecd) * MOTOR_ECD_TO_DEG;
 			break;
 		}
 	
 		case 0x208:
 		{
 			encoder_data_handler(&moto_claw_right,&g_can1_receive_str);
-			g_move_claw_right_pid.measure = moto_claw_right.speed_rpm;
+			//速度更新
+			g_get_bullet.claw_moto_right.moto_speed_pid.measure = moto_claw_right.speed_rpm;
+			//2006电机圈数,最多36圈
+			if(moto_claw_right.round_cnt == 36) moto_claw_right.round_cnt =0;
+			g_get_bullet.claw_moto_right.current_round = moto_claw_right.round_cnt;
+			g_get_bullet.claw_moto_right.cuttent_ecd = moto_claw_right.ecd;
+			g_get_bullet.claw_moto_right.moto_angle_pid.measure = (g_get_bullet.claw_moto_right.current_round * 8191 + g_get_bullet.claw_moto_right.cuttent_ecd) * MOTOR_ECD_TO_DEG;
 			break;
 		}
 		default:;

@@ -3,7 +3,11 @@
 
 #include <stm32f4xx.h>
 
+//将编码器的值转化成角度值
+#define ENCODER_ECD_TO_DEG    (0.04395067757294591624954218044195f)
 
+//将2006编码器的值转化成角度值 (10/8191)
+#define MOTOR_ECD_TO_DEG (0.00122085215480405322915394945672f)
 
 
 typedef struct

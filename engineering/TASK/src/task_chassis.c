@@ -4,12 +4,14 @@
 #include <driver_dbus.h>
 #include <task_imu.h>
 #include <task_led.h>
+#include <driver_control.h>
 
 ChassisMove_t g_chassis_move;
 
-
+float chassis_kp=10,chassis_ki=1,chassis_kd=7;
 void chassis_task(void *pvParameters)
 {
+	unsigned char i;
 	//底盘初始化
 	chassis_init(&g_chassis_move);
 	while(1)
@@ -24,7 +26,10 @@ void chassis_task(void *pvParameters)
 		control_chassis_motor(g_chassis_move.chassis_motor[0].give_current,g_chassis_move.chassis_motor[1].give_current,
 							  g_chassis_move.chassis_motor[2].give_current,g_chassis_move.chassis_motor[3].give_current);
 		
-		//LED7=!LED7;
+		for(i=0; i<4; i++)
+		{
+			pid_reset(&(g_chassis_move.motor_speed_pid[i]),chassis_kp,chassis_ki,chassis_kd);
+		}
 		
 		vTaskDelay(CHASSIS_TASK_CYCLE);
 	}
@@ -46,9 +51,9 @@ static void chassis_set_speed(ChassisMove_t * chassis_move)
 	//如果是遥控模式
 	if(chassis_move->chassis_mode == CHASSIS_RC_MODE)
 	{
-		chassis_move->vx_target=RC_Ctl.rc.ch3 * 1.5;
-		chassis_move->vy_target=RC_Ctl.rc.ch2 * 1.5;
-		chassis_move->vw_target=RC_Ctl.rc.ch0 * 1.2;
+		chassis_move->vx_target=RC_Ctl.rc.ch3 * 2.5;
+		chassis_move->vy_target=RC_Ctl.rc.ch2 * 2.5;
+		chassis_move->vw_target=RC_Ctl.rc.ch0 * 3;
 	}
 	//如果是键鼠模式
 	else if(chassis_move->chassis_mode == CHASSIS_KEYBOARD_MODE)
@@ -65,7 +70,7 @@ static void chassis_init(ChassisMove_t *chassis_move)
 	//底盘PID初始化
 	for(i=0; i<4; i++)
 	{
-		pid_struct_init(&chassis_move->motor_speed_pid[i], POSITION_PID, SPEED_LOOP, CHASSIS_MAX_PID_OUTER, CHASSIS_OUTER_INTEGRATION_LIMIT, 0 ,
+		pid_struct_init(&chassis_move->motor_speed_pid[i], POSITION_PID, SPEED_LOOP, CHASSIS_MAX_PID_OUTER, CHASSIS_OUTER_INTEGRATION_LIMIT,
 						CHASSIS_PID_KP, CHASSIS_PID_KI, CHASSIS_PID_KD);
 	}
 	//
@@ -94,7 +99,8 @@ static void chassis_pid_calculate(ChassisMove_t *chassis_move)
 	chassis_move->motor_speed_pid[0].target = -wheel_speed[0];
 	chassis_move->motor_speed_pid[1].target = -wheel_speed[1];
 	chassis_move->motor_speed_pid[2].target = wheel_speed[2];
-	chassis_move->motor_speed_pid[3].target = wheel_speed[3];
+	//1：27的电机
+	chassis_move->motor_speed_pid[3].target = wheel_speed[3] * 27 / 19;
 	
 	//计算每个轮子的速度值
 	for(i=0; i<4; i++)

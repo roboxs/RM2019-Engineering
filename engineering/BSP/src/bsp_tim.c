@@ -82,7 +82,4 @@ void BSP_TIM_Init(void)
 	TIM_OC2PreloadConfig(TIM8 , TIM_OCPreload_Enable);
 	TIM_CtrlPWMOutputs(TIM8,ENABLE);
 	TIM_Cmd(TIM8,ENABLE);
-	
-	
-	
 }

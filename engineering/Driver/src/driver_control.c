@@ -1,23 +1,6 @@
 #include <driver_control.h>
 
 
-
-
-/*爪子电机左*/
-const float MOVE_CLAW_LEFT_P = 5;
-const float MOVE_CLAW_LEFT_I = 0.1;
-const float MOVE_CLAW_LEFT_D = 0;
-const float MOVE_CLAW_LEFT_MAXOUT				= 20000;
-const float MOVE_CLAW_LEFT_INTEGRATION_LIMIT	= 5000;
-
-/*爪子电机右*/
-const float MOVE_CLAW_RIGHT_P = 5;
-const float MOVE_CLAW_RIGHT_I = 0.1;
-const float MOVE_CLAW_RIGHT_D = 0;
-const float MOVE_CLAW_RIGHT_MAXOUT				= 20000;
-const float MOVE_CLAW_RIGHT_INTEGRATION_LIMIT	= 5000;
-
-
 /*3510-上升电机*/
 const float RISE_ARM_P = 5;
 const float RISE_ARM_I = 0.1;
@@ -30,22 +13,16 @@ pid_t g_move_claw_left_pid;
 pid_t g_move_claw_right_pid;
 pid_t g_rise_arm_left_pid;
 pid_t g_rise_arm_right_pid;
+pid_t g_move_claw_left_speed,g_move_claw_right_angle;
 
 
 void pid_init_all(void)
-{
-
-/*claw-left-2006*/	pid_struct_init(&g_move_claw_left_pid, POSITION_PID, SPEED_LOOP, MOVE_CLAW_LEFT_MAXOUT, MOVE_CLAW_LEFT_INTEGRATION_LIMIT,
-					0, MOVE_CLAW_LEFT_P,  MOVE_CLAW_LEFT_I , MOVE_CLAW_LEFT_D);
-					
-/*claw-right-2006*/	pid_struct_init(&g_move_claw_right_pid, POSITION_PID, SPEED_LOOP, MOVE_CLAW_RIGHT_MAXOUT, MOVE_CLAW_RIGHT_INTEGRATION_LIMIT,
-					0, MOVE_CLAW_RIGHT_P,  MOVE_CLAW_RIGHT_I , MOVE_CLAW_RIGHT_D);	
-					
+{	
 /*rise_arm_left_3510*/	pid_struct_init(&g_rise_arm_left_pid, POSITION_PID, SPEED_LOOP, RISE_ARM_MAXOUT, RISE_ARM_INTEGRATION_LIMIT,
-					0, RISE_ARM_P,  RISE_ARM_I, RISE_ARM_D);
+					RISE_ARM_P,  RISE_ARM_I, RISE_ARM_D);
 
 /*rise_arm_right_3510*/	pid_struct_init(&g_rise_arm_right_pid, POSITION_PID, SPEED_LOOP, RISE_ARM_MAXOUT, RISE_ARM_INTEGRATION_LIMIT,
-					0, RISE_ARM_P,  RISE_ARM_I, RISE_ARM_D);	
+					RISE_ARM_P,  RISE_ARM_I, RISE_ARM_D);	
 	
 }
 
@@ -105,7 +82,7 @@ static void pid_param_init(
 	*@brief pid参数修改函数 内部函数
 	*@param[in] KP KI KD
 	*/
-static void pid_reset(pid_t	*pid, float kp, float ki, float kd)
+void pid_reset(pid_t *pid, float kp, float ki, float kd)
 {
     pid->p = kp;
     pid->i = ki;
@@ -124,7 +101,6 @@ void pid_struct_init(
     uint32_t maxout,
     uint32_t intergral_limit,
 
-    float	target,
     float 	kp, 
     float 	ki, 
     float 	kd)
@@ -132,7 +108,6 @@ void pid_struct_init(
     /*初始化函数指针*/
     pid->f_param_init = pid_param_init;
     pid->f_pid_reset  = pid_reset;
-	pid->target	  	  = target;
 		
     pid->f_param_init(pid, mode,loop, maxout, intergral_limit, kp, ki, kd);//初始化PID的基本参数
 	

@@ -77,7 +77,7 @@ typedef struct __pid_t
 void pid_init_all(void);
 
 float pid_calculate(pid_t * pidInner,pid_t * pidOuter);
-
+void pid_reset(pid_t *pid, float kp, float ki, float kd);
 		
 void pid_struct_init(
     pid_t* pid,
@@ -86,7 +86,6 @@ void pid_struct_init(
     uint32_t maxout,
     uint32_t intergral_limit,
     
-	float   target,
     float 	kp, 
     float 	ki, 
     float 	kd);
